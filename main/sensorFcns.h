@@ -4,6 +4,7 @@
 SensorData* pullData()
 {
   sensors_event_t accel, gyro, temp, pressure_event;
+  static double last_thetadot = 0;
   int avgNum = 5;
   
   double P = 0;
@@ -18,23 +19,28 @@ SensorData* pullData()
   P *= 100;   //convert from hPa to Pa
   
   double a = 0;
+  double thetadot = 0;
   for (int i = 0; i < avgNum; i++)
   {
     lsm6ds.getEvent(&accel, &gyro, &temp);
-    a += accel.acceleration.x;    //FIXME: decide actual axis to use (x, y, or z)
+    a += accel.acceleration.z;    
+    thetadot += gyro.gyro.z;
   }
   a /= avgNum;
+  thetadot /= avgNum;
 
   
   double t = millis() / 1000;
 
   double h = (1 - pow((P/101325), 0.190263)) / (2.25577*pow(10,-5));  //convert altimeter pressure to height in m using curve fit from https://www.engineeringtoolbox.com/air-altitude-pressure-d_462.html        
   double dt = t - sensorDataList[15]->getTimestamp();
+  
   double tempV1 = sensorDataList[15]->getVelocity() + ((sensorDataList[15]->getAcceleration() + a)/2) * dt;
   double tempV2 = (h - sensorDataList[15]->getHeight()) / dt;
   double V = (tempV1+tempV2) / 2;
 
-  double theta = 0;       //FIXME: decide axis for gyroscope to get pitch angle
+  double theta = sensorDataList[15]->getPitchAngle() + (thetadot+last_thetadot)*dt/2; 
+  last_thetadot = thetadot;        
 
   SensorData* new_sd = new SensorData(h, V, a, theta, t);
   return new_sd;
@@ -55,8 +61,6 @@ void sensor_tick()
 {
   updateSensorData();
 }
-
-
 
 
 
