@@ -11,6 +11,8 @@ uint16_t StepMotor(uint16_t delayUs) {
     return 1;//return 1 for up
   }
 
+//1 encoder pulse is 360/400 of a revolution about .9 degrees
+
   else if (dirSetDwn && sinceStep >= delayUs) {
     sd.step();
     //Serial.print('2');

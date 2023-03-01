@@ -21,6 +21,7 @@ int runNumber;
 char* fileName;
 //Logger* logPtrArray[LOG_PTR_ARRAY_MAX_SIZE];
 int numLogs;
+extern double cutoffTime;
 
 //dynamically allocate logs
 bool main_MakeLog(int runNumber) {
@@ -79,8 +80,7 @@ void main_Init() {
 
 
 void main_Tick() {
-    static double cutoffTime = 0;
-  
+    
     //state update, Mealy actions
     switch (CurrState) {
     case init_st:

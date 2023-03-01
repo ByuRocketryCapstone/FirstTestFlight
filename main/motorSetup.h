@@ -18,6 +18,7 @@ int driverStatus = 0;
 
 const uint16_t StepPeriodUs = 15;
 const uint16_t SensePeriodMs = 500;
+double encoder_value = encoder.value;
 
 HighPowerStepperDriver sd;
 

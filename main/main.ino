@@ -20,7 +20,8 @@ Adafruit_Sensor *dps_pressure = dps.getPressureSensor();
 char logBuffer[10240];    //buffer to store log messages between log ticks
 File logFile, indexFile, refFile;
 const int chipSelect = BUILTIN_SDCARD;
-
+double cutoffTime;
+extern double encoder_value;
 
 
 void setup()
@@ -32,6 +33,8 @@ void setup()
   sd.setChipSelectPin(CSPin);
   pinMode(upSwitchPin, INPUT);
   pinMode(downSwitchPin, INPUT);
+  pinMode(pin_A5,OUTPUT); //this corresponds to pin 33 which is our motor enable pin
+  pinMode(pin_A6,OUTPUT); //this is pin 34 which is our direction high is ccw (open) low is cw (close)
 
   setupMotorDriver();
   setupSensors();
@@ -58,37 +61,50 @@ void setup()
   }
   Serial.println("initialization done.");
 
-  if (SD.exists("example.txt")) {
-    Serial.println("example.txt exists.");
+ File dataFile = SD.open("data.txt", FILE_WRITE);
+
+   if (!dataFile) {
+    Serial.println("Error opening file.");
+    return;
   }
   else {
-    Serial.println("example.txt doesn't exist.");
+    Serial.println("The File Exists and We are ready to go")
+    }
+
   }
 
-  // open a new file and immediately close it:
-  Serial.println("Creating example.txt...");
-  myFile = SD.open("example.txt", FILE_WRITE);
-  myFile.close();
 
-  // Check to see if the file exists: 
-  if (SD.exists("example.txt")) {
-    Serial.println("example.txt exists.");
-  }
-  else {
-    Serial.println("example.txt doesn't exist.");  
-  }
-
-  // delete the file:
-  Serial.println("Removing example.txt...");
-  SD.remove("example.txt");
-
-  if (SD.exists("example.txt")){ 
-    Serial.println("example.txt exists.");
-  }
-  else {
-    Serial.println("example.txt doesn't exist.");  
-  }
-}
+//if (SD.exists("example.txt")) {
+//    Serial.println("example.txt exists.");
+//  }
+//  else {
+//    Serial.println("example.txt doesn't exist.");
+//  }
+//
+//  // open a new file and immediately close it:
+//  Serial.println("Creating example.txt...");
+//  myFile = SD.open("example.txt", FILE_WRITE);
+//  myFile.close();
+//
+//  // Check to see if the file exists: 
+//  if (SD.exists("example.txt")) {
+//    Serial.println("example.txt exists.");
+//  }
+//  else {
+//    Serial.println("example.txt doesn't exist.");  
+//  }
+//
+//  // delete the file:
+//  Serial.println("Removing example.txt...");
+//  SD.remove("example.txt");
+//
+//  if (SD.exists("example.txt")){ 
+//    Serial.println("example.txt exists.");
+//  }
+//  else {
+//    Serial.println("example.txt doesn't exist.");  
+//  }
+//}
 
 
 
@@ -103,6 +119,7 @@ void loop()
   static double lastHardwareTick = 0;
   static double lastSensorTick = 0;
   static double lastLogTick = 0;
+  digitalWrite(pin_A5,LOW); // make sure that some how the motor driver is not enabled before it should
 
   // Manage state machine ticks
   if (millis() - lastMainTick > mainSMTickRate)
@@ -122,6 +139,32 @@ void loop()
     //log_tick();
   }
 
+  if (cutoffTime = 0) {
+    //probably something here to read what the encoder value is 
+    for ( encodervalue < 23) {
+    digitalWrite(pin_A5, HIGH); //motor is enabled
+    digitalWrite(pin_A6, HIGH); // direction is ccw
+    }
+
+    for ( encodervalue >= 23) {
+    digitalWrite(pin_A5,LOW);
+     }
+
+
+    
+}
+
+   else if(cutofftime = 20){
+    for ( encodervalue < 67) {
+    digitalWrite(pin_A5, HIGH); //motor is enabled
+    digitalWrite(pin_A6, HIGH); // direction is ccw
+    }
+
+    for ( encodervalue >= 67) {
+    digitalWrite(pin_A5,LOW)
+     }
+     
+     }
   
 }
 
