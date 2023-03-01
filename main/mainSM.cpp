@@ -22,6 +22,8 @@ char* fileName;
 //Logger* logPtrArray[LOG_PTR_ARRAY_MAX_SIZE];
 int numLogs;
 extern double cutoffTime;
+extern bool motorRun;
+extern bool motorRetract;
 
 //dynamically allocate logs
 bool main_MakeLog(int runNumber) {
@@ -210,6 +212,7 @@ void main_Tick() {
         if (sensorDataList[15]->getAcceleration() < 0){
             main_cutoff = true;
             cutoffTime = millis();
+            motorRun = true;
         }
         break;
 
@@ -217,6 +220,8 @@ void main_Tick() {
     case wait_apogee_st:
         if (sensorDataList[15]->getVelocity() < 1){
           main_apogee = true;
+          motorRun = false;
+          motorRetract = true;
         }
         
         break;

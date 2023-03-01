@@ -22,6 +22,8 @@ File logFile, indexFile, refFile;
 const int chipSelect = BUILTIN_SDCARD;
 double cutoffTime;
 extern double encoder_value;
+bool motorRun = false;
+bool motorRetract = false;
 
 
 void setup()
@@ -35,6 +37,8 @@ void setup()
   pinMode(downSwitchPin, INPUT);
   pinMode(pin_A5,OUTPUT); //this corresponds to pin 33 which is our motor enable pin
   pinMode(pin_A6,OUTPUT); //this is pin 34 which is our direction high is ccw (open) low is cw (close)
+  digitalWrite(pin_A5,LOW); // make sure that some how the motor driver is not enabled before it should
+
 
   setupMotorDriver();
   setupSensors();
@@ -119,7 +123,7 @@ void loop()
   static double lastHardwareTick = 0;
   static double lastSensorTick = 0;
   static double lastLogTick = 0;
-  digitalWrite(pin_A5,LOW); // make sure that some how the motor driver is not enabled before it should
+  
 
   // Manage state machine ticks
   if (millis() - lastMainTick > mainSMTickRate)
@@ -139,7 +143,9 @@ void loop()
     //log_tick();
   }
 
-  if (cutoffTime = 0) {
+  if (motorRun == true) {
+
+
     //probably something here to read what the encoder value is 
     for ( encodervalue < 23) {
     digitalWrite(pin_A5, HIGH); //motor is enabled
@@ -148,28 +154,34 @@ void loop()
 
     for ( encodervalue >= 23) {
     digitalWrite(pin_A5,LOW);
-     }
+    }
 
 
-    
-}
-
-   else if(cutofftime = 20){
-    for ( encodervalue < 67) {
+    if (millis() - cutoffTime >= 20){
+ 
+    for (encodervalue < 67) {
     digitalWrite(pin_A5, HIGH); //motor is enabled
     digitalWrite(pin_A6, HIGH); // direction is ccw
     }
 
     for ( encodervalue >= 67) {
     digitalWrite(pin_A5,LOW)
-     }
+    }
+    
+    }
      
-     }
-  
 }
 
+if (motorRetract == true){
 
-
+    for (encodervalue >= 0){
+      digitalWrite(pin_A5,HIGH);
+      digitalWrite(pin_A6,LOW);
+      }
+    digitalWrite(pin_A5, LOW);  
+  }
+  
+}
 //void getData()
 //{
 //  sensors_event_t accel, gyro, mag, temp;
