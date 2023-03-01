@@ -6,6 +6,7 @@
 #include "SensorData.h"
 #include "motorFcns.h"
 #include "sensorFcns.h"
+#include<SimpleEncoder.h>
 
 #include <SD.h>
 
@@ -21,9 +22,23 @@ char logBuffer[10240];    //buffer to store log messages between log ticks
 File logFile, indexFile, refFile;
 const int chipSelect = BUILTIN_SDCARD;
 double cutoffTime;
-extern double encoder_value;
 bool motorRun = false;
 bool motorRetract = false;
+
+
+//Encoder Stuff
+
+const int BTN = 3;
+const int encA = 5;
+const int encB = 4;
+long startValue = 0;
+long lowerValue = -10000;
+long upperValue = 10000;
+
+SimpleEncoder encoder(BTN, encA, encB, startValue, lowerValue, upperValue);
+//Encoder resolution is 400 points per revolution (PPR)
+
+double encoder_value = encoder.value;
 
 
 void setup()
@@ -35,9 +50,9 @@ void setup()
   sd.setChipSelectPin(CSPin);
   pinMode(upSwitchPin, INPUT);
   pinMode(downSwitchPin, INPUT);
-  pinMode(pin_A5,OUTPUT); //this corresponds to pin 33 which is our motor enable pin
-  pinMode(pin_A6,OUTPUT); //this is pin 34 which is our direction high is ccw (open) low is cw (close)
-  digitalWrite(pin_A5,LOW); // make sure that some how the motor driver is not enabled before it should
+  pinMode(33,OUTPUT); //this corresponds to pin 33 which is our motor enable pin
+  pinMode(34,OUTPUT); //this is pin 34 which is our direction high is ccw (open) low is cw (close)
+  digitalWrite(33,LOW); // make sure that some how the motor driver is not enabled before it should
 
 
   setupMotorDriver();
@@ -148,24 +163,24 @@ void loop()
 
     //probably something here to read what the encoder value is 
     for ( encodervalue < 23) {
-    digitalWrite(pin_A5, HIGH); //motor is enabled
-    digitalWrite(pin_A6, HIGH); // direction is ccw
+    digitalWrite(33, HIGH); //motor is enabled
+    digitalWrite(34, HIGH); // direction is ccw
     }
 
     for ( encodervalue >= 23) {
-    digitalWrite(pin_A5,LOW);
+    digitalWrite(33,LOW);
     }
 
 
     if (millis() - cutoffTime >= 20){
  
     for (encodervalue < 67) {
-    digitalWrite(pin_A5, HIGH); //motor is enabled
-    digitalWrite(pin_A6, HIGH); // direction is ccw
+    digitalWrite(33, HIGH); //motor is enabled
+    digitalWrite(34, HIGH); // direction is ccw
     }
 
     for ( encodervalue >= 67) {
-    digitalWrite(pin_A5,LOW)
+    digitalWrite(33,LOW)
     }
     
     }
@@ -175,10 +190,10 @@ void loop()
 if (motorRetract == true){
 
     for (encodervalue >= 0){
-      digitalWrite(pin_A5,HIGH);
-      digitalWrite(pin_A6,LOW);
+      digitalWrite(33,HIGH);
+      digitalWrite(34,LOW);
       }
-    digitalWrite(pin_A5, LOW);  
+    digitalWrite(33, LOW);  
   }
   
 }

@@ -1,4 +1,3 @@
-#include<SimpleEncoder.h>
 #include <SPI.h>
 #include <HighPowerStepperDriver.h>
 
@@ -18,22 +17,12 @@ int driverStatus = 0;
 
 const uint16_t StepPeriodUs = 15;
 const uint16_t SensePeriodMs = 500;
-double encoder_value = encoder.value;
 
 HighPowerStepperDriver sd;
 
 elapsedMicros sinceStep;
 elapsedMillis sinceSense;
 
-const int BTN = 3;
-const int encA = 5;
-const int encB = 4;
-long startValue = 0;
-long lowerValue = -10000;
-long upperValue = 10000;
-
-SimpleEncoder encoder(BTN, encA, encB, startValue, lowerValue, upperValue);
-//Encoder resolution is 400 points per revolution (PPR)
 
 void setupMotorDriver()
 {
