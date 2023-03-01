@@ -2,18 +2,18 @@
 #define MOTOR_FCNS_H
 
 //function to step motor when it's supposed to
-uint16_t StepMotor(uint16_t delayUs) {
+uint16_t StepMotor(bool motor_direction) {
 
-  if (dirSetUp && sinceStep >= delayUs) {
+  if (motor_direction) {
     sd.step();
-    //Serial.print('1');
+    //Serial.print('1'); //move it up
     sinceStep = 0;
     return 1;//return 1 for up
   }
 
 //1 encoder pulse is 360/400 of a revolution about .9 degrees
 
-  else if (dirSetDwn && sinceStep >= delayUs) {
+  else if (!motor_direction) {
     sd.step();
     //Serial.print('2');
     sinceStep = 0;
