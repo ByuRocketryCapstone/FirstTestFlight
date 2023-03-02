@@ -5,9 +5,9 @@
 
 extern char logBuffer[10240];
 
-void fileWrite(char* msg)
-{
-  
-}
+//void fileWrite(char* msg)
+//{
+//  
+//}
 
 #endif //LOGGER_H

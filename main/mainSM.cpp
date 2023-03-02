@@ -25,6 +25,7 @@ extern double cutoffTime;
 extern bool motorRun;
 extern bool motorRetract;
 
+
 //dynamically allocate logs
 bool main_MakeLog(int runNumber) {
     if (runNumber > LOG_PTR_ARRAY_MAX_SIZE) {
@@ -211,7 +212,7 @@ void main_Tick() {
 //        if (update_getCutoff() == true) {
         if (sensorDataList[15]->getAcceleration() < 0){
             main_cutoff = true;
-            cutoffTime = millis();
+            //cutoffTime = millis();
             motorRun = true;
         }
         break;

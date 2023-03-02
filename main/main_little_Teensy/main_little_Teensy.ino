@@ -1,5 +1,5 @@
-#include "motorSetup.h"
-#include "motorFcns.h"
+//#include "motorSetup.h"
+//#include "motorFcns.h"
 #include <SPI.h>
 #include <HighPowerStepperDriver.h>
 //const uint8_t CSPin = 10;
@@ -20,20 +20,44 @@
 //HighPowerStepperDriver sd;
 //elapsedMicros sinceStep;
 //elapsedMillis sinceSense;
-int motor_enable;
-int motor_direction;
-int limit_switch;
-int upSwitch;
-int downSwitch;
+int motor_enable = 0;
+int motor_direction = 0;
+int limit_switch = 0;
+int upSwitch = 0;
+int downSwitch = 0;
+HighPowerStepperDriver sd;
+elapsedMicros sinceStep;
+elapsedMillis sinceSense;
+const uint16_t StepPeriodUs = 15;
+const uint16_t SensePeriodMs = 500;
 
- 
+//function to step motor when it's supposed to
+//uint16_t StepMotor(bool motor_direction) {
+//
+//  if (motor_direction) {
+//    sd.step();
+//    //Serial.print('1'); //move it up
+//    sinceStep = 0;
+//    return 1;//return 1 for up
+//  }
+//
+////1 encoder pulse is 360/400 of a revolution about .9 degrees
+//
+//  else if (!motor_direction) {
+//    sd.step();
+//    //Serial.print('2');
+//    sinceStep = 0;
+//    return 2;//return 2 for down
+//  }
+//
+//  else {
+//    return 0;//return 0 for no move
+//  }
+//}
+
 void setup() {
+ 
   // put your setup code here, to run once:
-  HighPowerStepperDriver sd;
-  elapsedMicros sinceStep;
-  elapsedMillis sinceSense;
-  const uint16_t StepPeriodUs = 15;
-  const uint16_t SensePeriodMs = 500;
   int loopnum = 0;
   int driverStatus = 0;
   SPI.begin();
@@ -41,14 +65,15 @@ void setup() {
   pinMode(3,INPUT); 
   pinMode(20,INPUT); //limit switch which is on pin 20
   pinMode(0,INPUT); //this corresponds to pin 0 which is our motor enable pin
-  pinMode(1,INPUT); //this is pin 1 which is our direction high is ccw (open) low is cw (close)
-  int motor_enable = digitalRead(0);
-  int motor_direction = digitalRead(1);
-  int limit_switch = digitalRead(20);
-  int upSwitch = digitalRead(3);
-  int downSwitch = digitalRead(2);
-  delay(1);
+  pinMode(22,INPUT); //this is pin 1 which is our direction high is ccw (open) low is cw (close)
+  pinMode(7, OUTPUT);
+//  int motor_enable = digitalRead(0);
+//  bool motor_direction = digitalRead(22);
+//  int limit_switch = digitalRead(20);
+//  int upSwitch = digitalRead(3);
+//  int downSwitch = digitalRead(2);
   sd.setChipSelectPin(10);
+  delay(1);
   sd.resetSettings();
   sd.clearStatus();
   // Select auto mixed decay.  TI's DRV8711 documentation recommends this mod
@@ -61,45 +86,57 @@ void setup() {
   sd.setStepMode(HPSDStepMode::MicroStep32);
   // Enable the motor outputs.
   sd.enableDriver();
-  
+  digitalWrite(7, HIGH);
+  sd.setDirection(1);
+  //Serial.begin(9600);
 
 }
 
 void loop() {
+  int motor_enable = digitalRead(0);
+  int motor_direction = digitalRead(22);
+  int limit_switch = digitalRead(20);
+  int upSwitch = digitalRead(3);
+  int downSwitch = digitalRead(2);
   // put your main code here, to run repeatedly:
-  int limit_switch = 0;
-  if (motor_enable == 1){
-      if(motor_direction == 0 && limit_switch == 1){
-        //do nothing
+  limit_switch = 0;
+  if ((motor_enable == 1 || upSwitch == 1 || downSwitch == 1) && sinceStep >= StepPeriodUs){
+      //Serial.print("I made it here");
+      if((motor_direction == 0 || downSwitch == 1) && limit_switch == 1){
+        //Serial.print("Whoops I am here now");
       }
-      if(limit_switch == 0){
-       StepMotor(motor_direction);
+      else if(limit_switch == 0){
+        if(downSwitch) {
+          motor_direction = 0;
+        }
+        else if(upSwitch) {
+          motor_direction = 1;
+        }
+        //Serial.print("I am just before a step");
+        sd.setDirection(motor_direction);
+        //Serial.print("DIRECTION SET");
+        sd.step();
+        //Serial.print("STEP TAKEN");
+        delayMicroseconds(StepPeriodUs);
+        //StepMotor(motor_direction);
+        //sinceStep = 0;
+        return 1;
       }
 
-      if(limit_switch == 1 && motor_direction == 1){
-       StepMotor(motor_direction);
+      else if(limit_switch == 1 && (motor_direction == 1 || upSwitch)){
+        if(upSwitch) {
+          motor_direction = 1;
+        }
+       sd.setDirection(motor_direction);
+       sd.step();
+       delayMicroseconds(StepPeriodUs);
+       return 2;
       }
 }
 else if (motor_enable == 0){
 
-  //do nothing or you die
+  return 0;
     
-  }
-
-if (upSwitch == 1){
-      if(motor_direction == 0 && limit_switch == 1){
-        //do nothing
-      }
-      if(limit_switch == 0){
-       StepMotor(motor_direction);
-      }
-}
-else if (downSwitch == 0){
-
-  //do nothing or you die
-    
-  }
-
-  
+  }  
 
 }

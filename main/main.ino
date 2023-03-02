@@ -1,10 +1,8 @@
 // import custom header files
-#include "motorSetup.h"
 #include "sensorSetup.h"
 #include "mainSM.h"
 #include "Logger.h"
 #include "SensorData.h"
-#include "motorFcns.h"
 #include "sensorFcns.h"
 #include<SimpleEncoder.h>
 
@@ -28,9 +26,9 @@ bool motorRetract = false;
 
 //Encoder Stuff
 
-const int BTN = 3;
+const int BTN = 4;
 const int encA = 5;
-const int encB = 4;
+const int encB = 3;
 long startValue = 0;
 long lowerValue = -10000;
 long upperValue = 10000;
@@ -38,24 +36,25 @@ long upperValue = 10000;
 SimpleEncoder encoder(BTN, encA, encB, startValue, lowerValue, upperValue);
 //Encoder resolution is 400 points per revolution (PPR)
 
-double encoder_value = encoder.value;
+double encodervalue;
 
 
 void setup()
 {
+  //double encoder_value = encoder.value;
   Serial1.begin(115200);//600000);//4608000);//921600);//600000);//115200);
   //while (!Serial1)
   //delay(10); // will pause Zero, Leonardo, etc until serial console opens
   SPI.begin();
-  sd.setChipSelectPin(CSPin);
-  pinMode(upSwitchPin, INPUT);
-  pinMode(downSwitchPin, INPUT);
-  pinMode(33,OUTPUT); //this corresponds to pin 33 which is our motor enable pin
-  pinMode(34,OUTPUT); //this is pin 34 which is our direction high is ccw (open) low is cw (close)
-  digitalWrite(33,LOW); // make sure that some how the motor driver is not enabled before it should
+  //sd.setChipSelectPin(CSPin);
+  //pinMode(upSwitchPin, INPUT);
+  //pinMode(downSwitchPin, INPUT);
+  pinMode(31,OUTPUT); //this corresponds to pin 33 which is our motor enable pin
+  pinMode(32,OUTPUT); //this is pin 34 which is our direction high is ccw (open) low is cw (close)
+  digitalWrite(31,LOW); // make sure that some how the motor driver is not enabled before it should
 
 
-  setupMotorDriver();
+  //setupMotorDriver();
   setupSensors();
 
   main_Init();
@@ -68,7 +67,7 @@ void setup()
   // Open serial communications and wait for port to open:
   Serial.begin(9600);
    while (!Serial) {
-    ; // wait for serial port to connect.
+     // wait for serial port to connect.
   }
 
 
@@ -87,7 +86,7 @@ void setup()
     return;
   }
   else {
-    Serial.println("The File Exists and We are ready to go")
+    Serial.println("The File Exists and We are ready to go");
     }
 
   }
@@ -134,69 +133,85 @@ void loop()
   static double sensorTickRate = 1000/20;
   static double logTickRate = 1000/20;
 
-  static double lastMainTick = 0;
-  static double lastHardwareTick = 0;
-  static double lastSensorTick = 0;
-  static double lastLogTick = 0;
+  double lastMainTick = 0;
+  double lastHardwareTick = 0;
+  double lastSensorTick = 0;
+  double lastLogTick = 0;
   
 
   // Manage state machine ticks
   if (millis() - lastMainTick > mainSMTickRate)
   {
-    main_Tick();
+    //main_Tick();
   }
-  if (millis() - lastHardwareTick > hardwareTickRate)
-  {
-    motor_tick();
-  }
+//  if (millis() - lastHardwareTick > hardwareTickRate)
+//  {
+//    motor_tick();
+//  }
   if (millis() - lastSensorTick > sensorTickRate)
   {
-    sensor_tick();
+    //sensor_tick();
   }
-  if (millis() - lastLogTick > logTickRate)
-  {
-    //log_tick();
-  }
+//  if (millis() - lastLogTick > logTickRate)
+//  {
+//    //log_tick();
+//  }
+  motorRun = false;
+  motorRetract = false;
+  cutoffTime = 5000;
+  encodervalue = encoder.VALUE;
+  Serial.println(encodervalue);
+ if (motorRun == true) 
+ {
 
-  if (motorRun == true) {
+    //Serial.print("I made it here");
+//    //probably something here to read what the encoder value is 
+    while(encodervalue <= 30) 
+   {
+   digitalWrite(31, HIGH); //motor is enabled
+   digitalWrite(32, HIGH); // direction is ccw
+   //encodervalue = encoder.VALUE;
+   //Serial.print(encodervalue);
+   }
 
-
-    //probably something here to read what the encoder value is 
-    for ( encodervalue < 23) {
-    digitalWrite(33, HIGH); //motor is enabled
-    digitalWrite(34, HIGH); // direction is ccw
-    }
-
-    for ( encodervalue >= 23) {
-    digitalWrite(33,LOW);
-    }
-
-
-    if (millis() - cutoffTime >= 20){
- 
-    for (encodervalue < 67) {
-    digitalWrite(33, HIGH); //motor is enabled
-    digitalWrite(34, HIGH); // direction is ccw
-    }
-
-    for ( encodervalue >= 67) {
-    digitalWrite(33,LOW)
-    }
+    //for (int i = encodervalue; encodervalue >= 15;) {
+    //digitalWrite(31, LOW);
+    //Serial.print("I am here");
+    //Serial.print(encodervalue);
     
-    }
-     
-}
+    
+
+      
+      //if (millis() - cutoffTime >= 5000){
+          //int i = encodervalue; 
+          while (encodervalue <= 50) {
+          digitalWrite(31, HIGH); //motor is enabled
+          digitalWrite(32, HIGH); // direction is ccw
+          //encodervalue = encoder.VALUE;
+          }
+
+//          for (int i = encodervalue; encodervalue >= 30;) {
+          digitalWrite(31,LOW);
+//          }
+    
+          //} 
+
+        
+
+ }
 
 if (motorRetract == true){
-
-    for (encodervalue >= 0){
+//
+    for (int i = encodervalue; encodervalue >= 0;){
       digitalWrite(33,HIGH);
       digitalWrite(34,LOW);
       }
-    digitalWrite(33, LOW);  
   }
-  
+
+   
 }
+
+
 //void getData()
 //{
 //  sensors_event_t accel, gyro, mag, temp;
